@@ -1,0 +1,30 @@
+name: Docker Description Update
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        name:
+          - mirakurun
+          - px4_drv
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Extract repository name
+        run: echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}" >> $GITHUB_ENV
+      
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.REPOSITORY_NAME }}-${{ matrix.name }}
+          short-description: ${{ github.event.repository.description }} (${{ matrix.name }})
+          readme-filepath: ./${{ matrix.name }}/README.md
